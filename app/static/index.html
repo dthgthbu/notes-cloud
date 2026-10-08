@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notes Cloud</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:640px;margin:2rem auto;padding:0 1rem;color:#222}
+  h1{margin:0 0 1rem}
+  nav{display:flex;gap:1rem;align-items:center;border-bottom:1px solid #ddd;padding-bottom:.75rem;margin-bottom:1.5rem}
+  nav .spacer{flex:1}
+  nav button{background:none;border:0;color:#0b5;cursor:pointer;font:inherit;padding:0}
+  input,textarea,button{font:inherit;padding:.5rem}
+  input,textarea{width:100%;box-sizing:border-box}
+  textarea{min-height:80px}
+  .card{border:1px solid #ddd;border-radius:8px;padding:1rem;margin-bottom:1rem}
+  .error{color:#b00;margin:.5rem 0}
+  .muted{color:#777;font-size:.9rem}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<nav>
+  <strong>Notes Cloud</strong>
+  <span class="spacer"></span>
+  <span id="who" class="muted"></span>
+  <button id="logout-btn" class="hidden">Выйти</button>
+</nav>
+
+<div id="error" class="error"></div>
+
+<div id="guest">
+  <h1>Вход / регистрация</h1>
+  <p><input id="username" placeholder="Логин"></p>
+  <p><input id="password" type="password" placeholder="Пароль"></p>
+  <button onclick="doLogin()">Войти</button>
+  <button onclick="doRegister()">Зарегистрироваться</button>
+</div>
+
+<div id="app" class="hidden">
+  <h1>Мои заметки</h1>
+  <form onsubmit="addNote(event)">
+    <p><input id="note-title" placeholder="Заголовок" maxlength="200" required></p>
+    <p><textarea id="note-body" placeholder="Текст заметки" required></textarea></p>
+    <button>Добавить</button>
+  </form>
+  <hr>
+  <div id="notes"></div>
+</div>
+
+<script>
+const api = (path, opts = {}) =>
+  fetch(path, { credentials: 'include', ...opts });
+
+function showError(msg) {
+  document.getElementById('error').textContent = msg || '';
+}
+
+async function refresh() {
+  const me = await api('/api/me');
+  const guest = document.getElementById('guest');
+  const app = document.getElementById('app');
+  const who = document.getElementById('who');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  if (me.ok) {
+    const user = await me.json();
+    who.textContent = user.username;
+    guest.classList.add('hidden');
+    app.classList.remove('hidden');
+    logoutBtn.classList.remove('hidden');
+    await loadNotes();
+  } else {
+    who.textContent = '';
+    guest.classList.remove('hidden');
+    app.classList.add('hidden');
+    logoutBtn.classList.add('hidden');
+  }
+}
+
+async function doRegister() {
+  showError('');
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const r = await api('/api/register', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username, password}),
+  });
+  if (!r.ok) { showError((await r.json()).detail); return; }
+  await refresh();
+}
+
+async function doLogin() {
+  showError('');
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const r = await api('/api/login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username, password}),
+  });
+  if (!r.ok) { showError((await r.json()).detail); return; }
+  await refresh();
+}
+
+async function logout() {
+  await api('/api/logout', {method: 'POST'});
+  await refresh();
+}
+
+async function loadNotes() {
+  const r = await api('/api/notes');
+  const notes = await r.json();
+  const box = document.getElementById('notes');
+  if (!notes.length) { box.innerHTML = '<p class="muted">Пока пусто.</p>'; return; }
+  box.innerHTML = notes.map(n => `
+    <div class="card">
+      <h3>${escapeHtml(n.title)}</h3>
+      <p style="white-space:pre-wrap">${escapeHtml(n.body)}</p>
+      <p class="muted">${n.created_at} UTC</p>
+      <button onclick="delNote(${n.id})">Удалить</button>
+    </div>
+  `).join('');
+}
+
+async function addNote(e) {
+  e.preventDefault();
+  const title = document.getElementById('note-title').value;
+  const body = document.getElementById('note-body').value;
+  const r = await api('/api/notes', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({title, body}),
+  });
+  if (!r.ok) { showError((await r.json()).detail); return; }
+  document.getElementById('note-title').value = '';
+  document.getElementById('note-body').value = '';
+  await loadNotes();
+}
+
+async function delNote(id) {
+  await api('/api/notes/' + id, {method: 'DELETE'});
+  await loadNotes();
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+
+document.getElementById('logout-btn').addEventListener('click', logout);
+refresh();
+</script>
+</body>
+</html>
