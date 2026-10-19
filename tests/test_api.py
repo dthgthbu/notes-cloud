@@ -145,3 +145,30 @@ def test_count_with_notes():
     r = client.get("/api/notes/count")
     assert r.status_code == 200
     assert r.json() == {"count": 2}
+
+
+
+def test_sort_default_desc():
+    client.post("/api/register", json={"username": "sort1", "password": "123456"})
+    client.post("/api/notes", json={"title": "first", "body": "1"})
+    client.post("/api/notes", json={"title": "second", "body": "2"})
+    notes = client.get("/api/notes").json()
+    assert notes[0]["title"] == "second"  
+    assert notes[1]["title"] == "first"
+
+
+def test_sort_asc():
+    client.post("/api/register", json={"username": "sort2", "password": "123456"})
+    client.post("/api/notes", json={"title": "first", "body": "1"})
+    client.post("/api/notes", json={"title": "second", "body": "2"})
+    notes = client.get("/api/notes?sort=asc").json()
+    assert notes[0]["title"] == "first"   
+    assert notes[1]["title"] == "second"
+
+
+def test_sort_unknown_value_falls_back_to_desc():
+    client.post("/api/register", json={"username": "sort3", "password": "123456"})
+    client.post("/api/notes", json={"title": "first", "body": "1"})
+    client.post("/api/notes", json={"title": "second", "body": "2"})
+    notes = client.get("/api/notes?sort=hacker").json()
+    assert notes[0]["title"] == "second"  
