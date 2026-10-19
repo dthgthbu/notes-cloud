@@ -111,6 +111,19 @@ def list_notes(user=Depends(current_user)):
     db.close()
     return [dict(r) for r in rows]
 
+@app.get("/api/notes/count")
+def count_notes(user=Depends(current_user)):
+    if user is None:
+        raise HTTPException(401, "not authenticated")
+    db = get_db()
+    row = db.execute(
+        "SELECT COUNT(*) AS c FROM notes WHERE user_id = ?",
+        (user["id"],),
+    ).fetchone()
+    db.close()
+    return {"count": row["c"]}
+
+
 
 @app.post("/api/notes")
 def create_note(data: NoteIn, user=Depends(current_user)):
