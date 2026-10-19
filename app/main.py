@@ -143,5 +143,9 @@ def delete_note(note_id: int, user=Depends(current_user)):
     db.close()
     return {"ok": True}
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 
 app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
