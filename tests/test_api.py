@@ -117,3 +117,9 @@ def test_contract_error_shape():
     r = client.post("/api/register", json={"username": "x", "password": "123456"})
     assert r.status_code == 400
     assert set(r.json().keys()) == {"detail"}
+
+
+def test_health():
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json() == {"status": "ok"}
