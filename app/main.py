@@ -99,17 +99,21 @@ def me(user=Depends(current_user)):
 
 
 @app.get("/api/notes")
-def list_notes(user=Depends(current_user)):
+def list_notes(sort: str = "desc", user=Depends(current_user)):
     if user is None:
         raise HTTPException(401, "not authenticated")
+    order = "ASC" if sort == "asc" else "DESC"
     db = get_db()
     rows = db.execute(
-        "SELECT id, title, body, created_at FROM notes "
-        "WHERE user_id = ? ORDER BY id DESC",
+        f"SELECT id, title, body, created_at FROM notes "
+        f"WHERE user_id = ? ORDER BY id {order}",
         (user["id"],),
     ).fetchall()
     db.close()
     return [dict(r) for r in rows]
+
+
+
 
 @app.get("/api/notes/count")
 def count_notes(user=Depends(current_user)):

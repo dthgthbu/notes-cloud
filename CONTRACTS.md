@@ -40,13 +40,18 @@
 200: `{"id": int, "username": str}`
 401: `{"detail": "not authenticated"}`
 
+
 ## GET /api/notes
 
 Требует авторизации.
 
+Query-параметр (опциональный): `sort` — `"desc"` (по умолчанию) или `"asc"`.
+Любое другое значение трактуется как `"desc"`.
+
 200: массив объектов `{"id": int, "title": str, "body": str, "created_at": str}`
-     Отсортирован по id DESC. Только заметки текущего пользователя.
+     Отсортирован по id: DESC (свежие сверху) или ASC. Только заметки текущего пользователя.
 401: `{"detail": "not authenticated"}`
+
 
 ## GET /api/notes/count
 
