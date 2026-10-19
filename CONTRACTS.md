@@ -48,6 +48,14 @@
      Отсортирован по id DESC. Только заметки текущего пользователя.
 401: `{"detail": "not authenticated"}`
 
+## GET /api/notes/count
+
+Требует авторизации.
+
+200: `{"count": int}` — количество заметок текущего пользователя
+401: `{"detail": "not authenticated"}`
+
+
 ## POST /api/notes
 
 Требует авторизации.

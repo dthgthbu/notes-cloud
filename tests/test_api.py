@@ -123,3 +123,25 @@ def test_health():
     r = client.get("/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
+
+
+
+def test_count_requires_auth():
+    r = client.get("/api/notes/count")
+    assert r.status_code == 401
+
+
+def test_count_empty():
+    client.post("/api/register", json={"username": "count1", "password": "123456"})
+    r = client.get("/api/notes/count")
+    assert r.status_code == 200
+    assert r.json() == {"count": 0}
+
+
+def test_count_with_notes():
+    client.post("/api/register", json={"username": "count2", "password": "123456"})
+    client.post("/api/notes", json={"title": "a", "body": "b"})
+    client.post("/api/notes", json={"title": "c", "body": "d"})
+    r = client.get("/api/notes/count")
+    assert r.status_code == 200
+    assert r.json() == {"count": 2}
