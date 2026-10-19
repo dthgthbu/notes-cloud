@@ -45,6 +45,10 @@
     <button>Добавить</button>
   </form>
   <hr>
+  <div id="notes-toolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+    <span id="notes-count" class="muted"></span>
+    <button id="sort-btn" onclick="toggleSort()">↓ Свежие</button>
+  </div>
   <div id="notes"></div>
 </div>
 
@@ -104,14 +108,29 @@ async function doLogin() {
   await refresh();
 }
 
+
 async function logout() {
   await api('/api/logout', {method: 'POST'});
+  sortOrder = 'desc';
+  document.getElementById('sort-btn').textContent = '↓ Свежие';
   await refresh();
 }
 
+
+
+let sortOrder = 'desc';
+
 async function loadNotes() {
-  const r = await api('/api/notes');
-  const notes = await r.json();
+  const [notesRes, countRes] = await Promise.all([
+    api('/api/notes?sort=' + sortOrder),
+    api('/api/notes/count'),
+  ]);
+  const notes = await notesRes.json();
+  const countData = await countRes.json();
+
+  document.getElementById('notes-count').textContent =
+    'Всего заметок: ' + countData.count;
+
   const box = document.getElementById('notes');
   if (!notes.length) { box.innerHTML = '<p class="muted">Пока пусто.</p>'; return; }
   box.innerHTML = notes.map(n => `
@@ -123,6 +142,16 @@ async function loadNotes() {
     </div>
   `).join('');
 }
+
+function toggleSort() {
+  sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+  document.getElementById('sort-btn').textContent =
+    sortOrder === 'desc' ? '↓ Свежие' : '↑ Старые';
+  loadNotes();
+}
+
+
+
 
 async function addNote(e) {
   e.preventDefault();
