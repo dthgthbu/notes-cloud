@@ -58,3 +58,23 @@ DELETE /api/notes/{id}     — удалить свою заметку
     pytest -v
 
 Контракты API и схема БД описаны в `CONTRACTS.md`.
+
+
+
+
+
+    cp .env.example .env
+    # отредактируй .env — впиши свой SECRET_KEY
+    docker compose up -d --build
+
+Сервис будет доступен на http://localhost:8002
+
+Данные (SQLite) хранятся в `./data/notes.db` — volume монтируется в контейнер, при пересборке не теряются.
+
+Остановить:
+
+    docker compose down
+
+Логи:
+
+    docker compose logs -f
