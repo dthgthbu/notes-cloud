@@ -1,0 +1,19 @@
+services:
+  notes-cloud:
+    build: .
+    container_name: notes-cloud
+    ports:
+      - "8002:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
+      DB_PATH: /data/notes.db
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+

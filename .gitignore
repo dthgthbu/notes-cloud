@@ -7,3 +7,5 @@ notes.db
 .env
 .DS_Store
 *.db
+data/
+
