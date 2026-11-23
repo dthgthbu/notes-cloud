@@ -24,57 +24,157 @@
 - Python 3.10+
 - FastAPI
 - Uvicorn
-- SQLite
-- passlib[bcrypt], PyJWT
+# Notes Cloud ☁️
 
-Запуск локально
+**Notes Cloud** — простое веб-приложение для создания и хранения личных текстовых заметок.
 
+Создавайте заметки, просматривайте их и удаляйте в любое время. У каждого пользователя свои заметки, доступные только после входа в аккаунт.
+
+## ✨ Возможности
+
+- Регистрация и вход в аккаунт.
+- Создание личных заметок.
+- Просмотр и удаление своих заметок.
+- Сортировка заметок: от новых к старым и наоборот.
+- Счётчик общего количества заметок.
+- Защита паролей и авторизация пользователей.
+
+## 🖥️ Технологии
+
+- Python и FastAPI — серверная часть.
+- HTML и JavaScript — интерфейс приложения.
+- SQLite — хранение данных.
+- JWT — авторизация.
+- Docker — запуск приложения.
+
+## 🚀 Как запустить приложение
+
+### Вариант 1. Запуск через Docker
+
+Самый простой способ запустить проект.
+
+**1. Скачайте проект:**
+
+```bash
+git clone https://github.com/dthgthbu/notes-cloud.git
+cd notes-cloud
+```
+
+**2. Создайте файл настроек:**
+
+```bash
+cp .env.example .env
+```
+
+**3. Откройте `.env` и добавьте секретный ключ.**
+
+Его можно сгенерировать командой:
+
+```bash
+python3 -c 'import secrets; print(secrets.token_urlsafe(48))'
+```
+
+Скопируйте полученный ключ в `.env`:
+
+```env
+SECRET_KEY=ваш_сгенерированный_ключ
+```
+
+**4. Запустите приложение:**
+
+```bash
+docker compose up -d --build
+```
+
+**5. Откройте приложение в браузере:**
+
+http://localhost:8002
+
+Готово! Теперь можно зарегистрироваться и создавать заметки.
+
+### Вариант 2. Локальный запуск без Docker
+
+Понадобится Python версии 3.10 или новее.
+
+**1. Скачайте проект:**
+
+```bash
+git clone https://github.com/dthgthbu/notes-cloud.git
+cd notes-cloud
+```
+
+**2. Создайте виртуальное окружение:**
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
+```
+
+**3. Установите необходимые библиотеки:**
+
+```bash
 pip install -r requirements.txt
-export SECRET_KEY="$(python -c 'import secrets;print(secrets.token_urlsafe(48))')"
+```
+
+**4. Создайте секретный ключ:**
+
+```bash
+export SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
+```
+
+**5. Запустите приложение:**
+
+```bash
 uvicorn app.main:app --reload --port 8000
+```
 
-Открыть в браузере: http://127.0.0.1:8000
+Откройте в браузере:
 
-API
+http://127.0.0.1:8000
 
-POST   /api/register       — регистрация
-POST   /api/login          — вход
-POST   /api/logout         — выход
-GET    /api/me             — текущий пользователь
-GET    /api/notes          — список своих заметок
-POST   /api/notes          — создать заметку
-DELETE /api/notes/{id}     — удалить свою заметку
+## 📋 Возможности API
 
-Деплой
+| Метод | Адрес | Описание |
+|---|---|---|
+| POST | `/api/register` | Регистрация |
+| POST | `/api/login` | Вход в аккаунт |
+| POST | `/api/logout` | Выход из аккаунта |
+| GET | `/api/me` | Информация о пользователе |
+| GET | `/api/notes` | Получение заметок |
+| POST | `/api/notes` | Создание заметки |
+| DELETE | `/api/notes/{id}` | Удаление заметки |
+| GET | `/api/notes/count` | Количество заметок |
 
-Сервис разворачивается на VPS и запускается через systemd + uvicorn на порту 8000.
+## 🧪 Проверка работы
 
+Для запуска автоматических тестов выполните:
 
+```bash
+pytest -v
+```
 
-Все ручки и БД покрыты автотестами (`tests/test_api.py`). Запуск:
+## 📁 Структура проекта
 
-    pytest -v
+```text
+notes-cloud/
+├── app/                # Основной код приложения
+│   ├── main.py         # Сервер и API
+│   ├── auth.py         # Авторизация
+│   ├── database.py     # Работа с базой данных
+│   └── static/         # Интерфейс приложения
+├── tests/              # Автоматические тесты
+├── data/               # Данные приложения
+├── docs/               # Документация (если появится)
+├── Dockerfile          # Настройки Docker
+├── docker-compose.yml  # Запуск через Docker
+├── requirements.txt    # Зависимости Python
+└── README.md           # Описание проекта
+```
 
-Контракты API и схема БД описаны в `CONTRACTS.md`.
+## 📖 Документация
 
+Подробности о работе API и структуре базы данных можно найти в файле [CONTRACTS.md](CONTRACTS.md).
 
+---
 
-
-
-    cp .env.example .env
-    # отредактируй .env — впиши свой SECRET_KEY
-    docker compose up -d --build
-
-Сервис будет доступен на http://localhost:8002
-
-Данные (SQLite) хранятся в `./data/notes.db` — volume монтируется в контейнер, при пересборке не теряются.
-
-Остановить:
-
-    docker compose down
-
-Логи:
-
-    docker compose logs -f
+**Notes Cloud** — ваши заметки в одном месте ☁️

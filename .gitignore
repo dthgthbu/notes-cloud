@@ -8,4 +8,4 @@ notes.db
 .DS_Store
 *.db
 data/
-
+.pytest_cache/
